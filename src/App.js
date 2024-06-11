@@ -3,6 +3,7 @@ import {
   Routes,
   Route,
   Outlet,
+  Navigate,
 } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import Login from "./components/Login";
@@ -45,6 +46,7 @@ function App() {
             </AuthLayout>
           }
         />
+        <Route path="/" element={<Navigate replace to="/login" />} />
         <Route
           element={
             <MainLayout>

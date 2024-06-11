@@ -12,86 +12,91 @@ const AddPatientRecordForm = ({ onPatientAdded }) => {
 
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    console.log(`Input "${name}" changed:`, value);
-    if (name === "identityNumber") {
-      const intValue = parseInt(value);
-      if (!isNaN(intValue)) {
-        setFormValues({ ...formValues, [name]: intValue });
+    setFormValues((prevValues) => {
+      if (name === "identityNumber") {
+        const intValue = parseInt(value);
+        return { ...prevValues, [name]: !isNaN(intValue) ? intValue : "" };
+      } else if (name === "phoneNumber") {
+        return {
+          ...prevValues,
+          [name]: value.startsWith("+62") ? value : "+62",
+        };
+      } else if (name === "birthDate") {
+        const isoDate = new Date(value).toISOString().split("T")[0];
+        return { ...prevValues, [name]: isoDate };
       } else {
-        setFormValues({ ...formValues, [name]: "" }); // Reset to empty string if parsing fails
+        return { ...prevValues, [name]: value };
       }
-    } else if (name === "phoneNumber") {
-      // Make sure the phone number always starts with "+62"
-      if (value.startsWith("+62")) {
-        setFormValues({ ...formValues, [name]: value });
-      } else {
-        setFormValues({ ...formValues, [name]: "+62" });
-      }
-    } else if (name === "birthDate") {
-      const isoDate = new Date(value).toISOString().split("T")[0];
-      setFormValues({ ...formValues, [name]: isoDate });
-    } else {
-      setFormValues({ ...formValues, [name]: value });
-    }
+    });
   };
 
   const handleFileChange = (e) => {
     const { name, files } = e.target;
-    console.log(`File input "${name}" changed:`, files[0]);
-    setFormValues({ ...formValues, [name]: files[0] });
+    setFormValues((prevValues) => ({ ...prevValues, [name]: files[0] }));
   };
 
   const validateForm = () => {
-    console.log("Validating form...");
     const newErrors = {};
-    if (!formValues.identityNumber) {
-      newErrors.identityNumber = "Identity Number is required.";
+    const identityNumberRegex = /^\d{16}$/;
+    const phoneNumberRegex = /^\+62\d{9,14}$/;
+    const nameRegex = /^.{4,30}$/;
+    const genderValues = ["male", "female"];
+
+    if (
+      !formValues.identityNumber ||
+      !identityNumberRegex.test(formValues.identityNumber)
+    ) {
+      newErrors.identityNumber =
+        "Identity Number is required and should be 16 digits.";
     }
-    if (!formValues.phoneNumber) {
-      newErrors.phoneNumber = "Phone Number is required.";
+    if (
+      !formValues.phoneNumber ||
+      !phoneNumberRegex.test(formValues.phoneNumber)
+    ) {
+      newErrors.phoneNumber =
+        "Phone Number is required, should start with '+62', and should be between 10 and 15 characters.";
     }
-    if (!formValues.name) {
-      newErrors.name = "Name is required.";
+    if (!formValues.name || !nameRegex.test(formValues.name)) {
+      newErrors.name =
+        "Name is required and should be between 3 and 30 characters.";
     }
-    if (!formValues.birthDate) {
-      newErrors.birthDate = "Birth Date is required.";
+    if (!formValues.birthDate || isNaN(Date.parse(formValues.birthDate))) {
+      newErrors.birthDate =
+        "Birth Date is required and should be in ISO 8601 format.";
     }
-    if (!formValues.gender) {
-      newErrors.gender = "Gender is required.";
+    if (!formValues.gender || !genderValues.includes(formValues.gender)) {
+      newErrors.gender =
+        "Gender is required and should be either 'male' or 'female'.";
     }
     if (!formValues.identityCardScanImg) {
       newErrors.identityCardScanImg = "Identity Card Scan Image is required.";
     }
-    console.log("Validation errors:", newErrors);
+
     return newErrors;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form submitted, validating...");
+    setIsLoading(true);
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
-      console.log("Validation failed, errors:", validationErrors);
       setErrors(validationErrors);
+      setIsLoading(false);
       return;
     }
 
     const formData = new FormData();
     for (const key in formValues) {
       if (key === "birthDate") {
-        // Add time to the birthDate
-        const isoBirthDate = formValues[key] + "T00:00:00";
-        formData.append(key, isoBirthDate);
+        formData.append(key, formValues[key] + "T00:00:00");
       } else {
         formData.append(key, formValues[key]);
       }
     }
-
-    // Log form values for debugging
-    console.log("Form Values:", Object.fromEntries(formData));
 
     try {
       const response = await fetch("http://127.0.0.1:5000/v1/medical/patient", {
@@ -103,36 +108,54 @@ const AddPatientRecordForm = ({ onPatientAdded }) => {
       });
 
       if (!response.ok) {
+        const responseData = await response.json().catch(() => response.text());
         let errorMessage = "Failed to add patient record";
-        let responseData = {};
-        try {
-          responseData = await response.json();
-          if (responseData.errors) {
-            errorMessage = responseData.errors;
-          }
-        } catch (error) {
-          console.error("Error parsing response data:", error);
+        if (typeof responseData === "string") {
+          const newErrors = {};
+          const errorMessages = responseData.split("\n");
+          errorMessages.forEach((error) => {
+            const keyMatch = error.match(/Key: '(.+?)'/);
+            if (keyMatch) {
+              const key = keyMatch[1].split(".").pop();
+              newErrors[key] = error;
+            }
+          });
+          setErrors(newErrors);
+          errorMessage = responseData;
+          throw new Error(errorMessage);
+        } else if (responseData.message) {
+          const newErrors = {};
+          const errorMessages = responseData.message.split("\n");
+          errorMessages.forEach((error) => {
+            const keyMatch = error.match(/Key: '(.+?)'/);
+            if (keyMatch) {
+              const key = keyMatch[1].split(".").pop();
+              newErrors[key] = error;
+            }
+          });
+          setErrors(newErrors);
+          errorMessage = responseData.message;
+          throw new Error(errorMessage);
         }
-        console.error("Failed to add patient record:", errorMessage);
-        setErrors(responseData.errors || { form: errorMessage });
-        throw new Error(errorMessage);
+      } else {
+        const responseData = await response.json();
+        setMessage("Patient record added successfully");
+        onPatientAdded();
+        setFormValues({
+          identityNumber: "",
+          phoneNumber: "+62",
+          name: "",
+          birthDate: "",
+          gender: "",
+          identityCardScanImg: null,
+        });
+        setErrors({});
       }
-
-      const data = await response.json();
-      setMessage("Patient record added successfully");
-      onPatientAdded();
-      setFormValues({
-        identityNumber: "",
-        phoneNumber: "+62",
-        name: "",
-        birthDate: "",
-        gender: "",
-        identityCardScanImg: null,
-      });
-      setErrors({});
     } catch (error) {
       console.error("Error submitting form:", error);
-      setMessage("Failed to add patient record");
+      setMessage(error.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -140,7 +163,7 @@ const AddPatientRecordForm = ({ onPatientAdded }) => {
     <div className="p-4 sm:ml-64">
       <main className="container mx-auto p-4">
         <h1 className="text-3xl tracking-tight font-bold mb-2 text-white">
-          Manage Medical Record
+          Manage Patient Record
         </h1>
         <section className="mb-8">
           <h2 className="text-lg font-medium mb-2 text-gray-400">
@@ -161,7 +184,7 @@ const AddPatientRecordForm = ({ onPatientAdded }) => {
                 name="identityNumber"
                 value={formValues.identityNumber}
                 onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded mt-1"
+                className="w-full p-2 border border-gray-300 rounded mt-1 text-gray-900"
               />
               {errors.identityNumber && (
                 <p className="text-red-500 text-sm">{errors.identityNumber}</p>
@@ -177,7 +200,7 @@ const AddPatientRecordForm = ({ onPatientAdded }) => {
                 name="phoneNumber"
                 value={formValues.phoneNumber}
                 onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded mt-1"
+                className="w-full p-2 border border-gray-300 rounded mt-1 text-gray-900"
               />
               {errors.phoneNumber && (
                 <p className="text-red-500 text-sm">{errors.phoneNumber}</p>
@@ -193,7 +216,7 @@ const AddPatientRecordForm = ({ onPatientAdded }) => {
                 name="name"
                 value={formValues.name}
                 onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded mt-1"
+                className="w-full p-2 border border-gray-300 rounded mt-1 text-gray-900"
               />
               {errors.name && (
                 <p className="text-red-500 text-sm">{errors.name}</p>
@@ -209,13 +232,12 @@ const AddPatientRecordForm = ({ onPatientAdded }) => {
                 name="birthDate"
                 value={formValues.birthDate}
                 onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded mt-1"
+                className="w-full p-2 border border-gray-300 rounded mt-1 text-gray-900"
               />
               {errors.birthDate && (
                 <p className="text-red-500 text-sm">{errors.birthDate}</p>
               )}
             </div>
-
             <div className="mb-4">
               <label htmlFor="gender" className="block text-gray-300">
                 Gender
@@ -225,7 +247,7 @@ const AddPatientRecordForm = ({ onPatientAdded }) => {
                 name="gender"
                 value={formValues.gender}
                 onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded mt-1"
+                className="w-full p-2 border border-gray-300 rounded mt-1 text-gray-900"
               >
                 <option value="">Select Gender</option>
                 <option value="male">Male</option>
@@ -247,7 +269,7 @@ const AddPatientRecordForm = ({ onPatientAdded }) => {
                 id="identityCardScanImg"
                 name="identityCardScanImg"
                 onChange={handleFileChange}
-                className="w-full p-2 border border-gray-300 rounded mt-1"
+                className="w-full border border-gray-300 bg-white rounded mt-1 text-gray-900"
               />
               {errors.identityCardScanImg && (
                 <p className="text-red-500 text-sm">
@@ -258,12 +280,10 @@ const AddPatientRecordForm = ({ onPatientAdded }) => {
             <button
               type="submit"
               className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-700"
+              disabled={isLoading}
             >
-              Add Patient
+              {isLoading ? "Adding..." : "Add Patient"}
             </button>
-            <p id="add-patient-message" className="mt-4">
-              {message}
-            </p>
           </form>
         </section>
       </main>

@@ -46,7 +46,7 @@ const Sidebar = () => {
               <li>
                 <Link
                   to="/"
-                  className="flex w-full items-center p-2 text-white rounded-lg dark:text-white hover:bg-green-900 dark:hover:bg-gray-700 group"
+                  className="flex w-full items-center p-2 text-white rounded-lg dark:text-white hover:bg-gray-900 dark:hover:bg-gray-700 group"
                 >
                   <svg
                     className="w-5 h-5 text-white transition duration-75 dark:text-gray-400 group-hover:text-white dark:group-hover:text-white"
@@ -66,7 +66,7 @@ const Sidebar = () => {
               <li>
                 <button
                   type="button"
-                  className="flex items-center w-full p-2 text-base text-white transition duration-75 rounded-lg group hover:bg-green-900 dark:text-white dark:hover:bg-gray-700"
+                  className="flex items-center w-full p-2 text-base text-white transition duration-75 rounded-lg group hover:bg-gray-900 dark:text-white dark:hover:bg-gray-700"
                   aria-controls="dropdown-example"
                   data-collapse-toggle="dropdown-example"
                 >
