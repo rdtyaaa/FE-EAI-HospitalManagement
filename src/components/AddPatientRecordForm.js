@@ -30,6 +30,9 @@ const AddPatientRecordForm = ({ onPatientAdded }) => {
       } else {
         setFormValues({ ...formValues, [name]: "+62" });
       }
+    } else if (name === "birthDate") {
+      const isoDate = new Date(value).toISOString().split("T")[0];
+      setFormValues({ ...formValues, [name]: isoDate });
     } else {
       setFormValues({ ...formValues, [name]: value });
     }
@@ -44,50 +47,25 @@ const AddPatientRecordForm = ({ onPatientAdded }) => {
   const validateForm = () => {
     console.log("Validating form...");
     const newErrors = {};
-    if (formValues.identityNumber.length !== 16) {
-      newErrors.identityNumber = "Identity Number must be 16 digits.";
+    if (!formValues.identityNumber) {
+      newErrors.identityNumber = "Identity Number is required.";
     }
-    if (!/^(\+62)[0-9]{8,13}$/.test(formValues.phoneNumber)) {
-      newErrors.phoneNumber =
-        "Phone Number must start with +62 and be 10-15 digits long.";
+    if (!formValues.phoneNumber) {
+      newErrors.phoneNumber = "Phone Number is required.";
     }
-    if (formValues.name.length < 3 || formValues.name.length > 30) {
-      newErrors.name = "Name must be between 3 and 30 characters.";
+    if (!formValues.name) {
+      newErrors.name = "Name is required.";
     }
     if (!formValues.birthDate) {
       newErrors.birthDate = "Birth Date is required.";
     }
-    if (!["male", "female"].includes(formValues.gender)) {
-      newErrors.gender = "Gender must be either 'male' or 'female'.";
+    if (!formValues.gender) {
+      newErrors.gender = "Gender is required.";
     }
     if (!formValues.identityCardScanImg) {
       newErrors.identityCardScanImg = "Identity Card Scan Image is required.";
     }
     console.log("Validation errors:", newErrors);
-    // Log untuk memeriksa tipe data setiap inputan
-    console.log("Form Values:");
-    console.log(
-      "identityNumber:",
-      typeof formValues.identityNumber,
-      formValues.identityNumber
-    );
-    console.log(
-      "phoneNumber:",
-      typeof formValues.phoneNumber,
-      formValues.phoneNumber
-    );
-    console.log("name:", typeof formValues.name, formValues.name);
-    console.log(
-      "birthDate:",
-      typeof formValues.birthDate,
-      formValues.birthDate
-    );
-    console.log("gender:", typeof formValues.gender, formValues.gender);
-    console.log(
-      "identityCardScanImg:",
-      typeof formValues.identityCardScanImg,
-      formValues.identityCardScanImg
-    );
     return newErrors;
   };
 
@@ -103,9 +81,17 @@ const AddPatientRecordForm = ({ onPatientAdded }) => {
 
     const formData = new FormData();
     for (const key in formValues) {
-      formData.append(key, formValues[key]);
+      if (key === "birthDate") {
+        // Add time to the birthDate
+        const isoBirthDate = formValues[key] + "T00:00:00";
+        formData.append(key, isoBirthDate);
+      } else {
+        formData.append(key, formValues[key]);
+      }
     }
 
+    // Log form values for debugging
+    console.log("Form Values:", Object.fromEntries(formData));
 
     try {
       const response = await fetch("http://127.0.0.1:5000/v1/medical/patient", {
@@ -117,7 +103,19 @@ const AddPatientRecordForm = ({ onPatientAdded }) => {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to add patient record");
+        let errorMessage = "Failed to add patient record";
+        let responseData = {};
+        try {
+          responseData = await response.json();
+          if (responseData.errors) {
+            errorMessage = responseData.errors;
+          }
+        } catch (error) {
+          console.error("Error parsing response data:", error);
+        }
+        console.error("Failed to add patient record:", errorMessage);
+        setErrors(responseData.errors || { form: errorMessage });
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -135,11 +133,6 @@ const AddPatientRecordForm = ({ onPatientAdded }) => {
     } catch (error) {
       console.error("Error submitting form:", error);
       setMessage("Failed to add patient record");
-
-      // Jika error berasal dari respons API
-      if (error.response) {
-        console.error("API Error:", error.response.status, error.response.data);
-      }
     }
   };
 
