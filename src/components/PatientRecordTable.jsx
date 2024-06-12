@@ -1,9 +1,15 @@
+// PatientRecordTable.js
 import React, { useEffect, useState } from "react";
-import useAxiosConfig from "../JWTconfig/axiosConfig";
+import createAxiosInstance from "../JWTconfig/axiosConfig";
+import { useNavigate } from "react-router-dom";
 
 const PatientRecordTable = () => {
   const [patientRecords, setPatientRecords] = useState([]);
-  const axiosInstance = useAxiosConfig("http://127.0.0.1:5000/v1/"); // Sesuaikan URL dengan layanan yang digunakan
+  const navigate = useNavigate();
+  const axiosInstance = React.useMemo(
+    () => createAxiosInstance("http://127.0.0.1:5000/v1/"),
+    []
+  );
 
   useEffect(() => {
     const fetchPatientRecords = async () => {
@@ -13,11 +19,17 @@ const PatientRecordTable = () => {
       } catch (error) {
         console.error("Failed to fetch patient records", error);
         setPatientRecords([]);
+        if (
+          error.response &&
+          (error.response.status === 401 || error.response.status === 403)
+        ) {
+          navigate("/login");
+        }
       }
     };
 
     fetchPatientRecords();
-  }, [axiosInstance]);
+  }, [axiosInstance, navigate]);
 
   const formatBirthDate = (dateString) => {
     const options = { day: "2-digit", month: "long", year: "numeric" };

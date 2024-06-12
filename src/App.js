@@ -12,7 +12,7 @@ import PatientRecord from "./components/PatientRecord";
 import MedicalRecord from "./components/MedicalRecord";
 import RegisterForm from "./components/Register";
 import SearchPage from "./components/SearchPage";
-import ManageNurse from "./components/ManageNurse";
+import ManageUser from "./components/ManageUser";
 import ProtectedRoute from "./JWTconfig/protectedRoute";
 
 // Layout dengan sidebar
@@ -65,7 +65,7 @@ function App() {
           <Route path="/search" element={<SearchPage />} />
           <Route path="/manage/patient" element={<PatientRecord />} />
           <Route path="/manage/medical" element={<MedicalRecord />} />
-          <Route path="/manage/nurse" element={<ManageNurse />} />
+          <Route path="/manage/nurse" element={<ManageUser />} />
         </Route>
       </Routes>
     </Router>

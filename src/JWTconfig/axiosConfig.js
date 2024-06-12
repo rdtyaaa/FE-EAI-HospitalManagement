@@ -1,10 +1,7 @@
 // axiosConfig.js
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 
-const useAxiosConfig = (serviceURL) => {
-  const navigate = useNavigate();
-
+const createAxiosInstance = (serviceURL) => {
   const axiosInstance = axios.create({
     baseURL: serviceURL,
   });
@@ -28,7 +25,7 @@ const useAxiosConfig = (serviceURL) => {
         (error.response.status === 401 || error.response.status === 403)
       ) {
         localStorage.removeItem("accessToken");
-        navigate("/login");
+        // navigate('/login'); // Navigasi akan dilakukan di komponen
       }
       return Promise.reject(error);
     }
@@ -37,4 +34,4 @@ const useAxiosConfig = (serviceURL) => {
   return axiosInstance;
 };
 
-export default useAxiosConfig;
+export default createAxiosInstance;
