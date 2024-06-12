@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import useAxiosConfig from "../JWTconfig/axiosConfig";
 
 const AddPatientRecordForm = ({ onPatientAdded }) => {
   const [formValues, setFormValues] = useState({
@@ -13,6 +14,8 @@ const AddPatientRecordForm = ({ onPatientAdded }) => {
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  const axiosInstance = useAxiosConfig("http://127.0.0.1:5000/v1/medical/");
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;

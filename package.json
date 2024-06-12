@@ -9,12 +9,10 @@
     "autoprefixer": "^10.4.19",
     "axios": "^1.7.2",
     "flowbite-react": "^0.9.0",
-    "postcss": "^8.4.38",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.23.1",
     "react-scripts": "5.0.1",
-    "tailwindcss": "^3.4.4",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
@@ -30,6 +28,7 @@
       "react-app/jest"
     ]
   },
+  "proxy": "http://localhost:6000",
   "browserslist": {
     "production": [
       ">0.2%",
@@ -46,6 +45,9 @@
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-react": "^7.34.2",
-    "sass-loader": "^14.2.1"
+    "eslint-plugin-tailwindcss": "^3.17.3",
+    "postcss": "^8.4.38",
+    "sass-loader": "^14.2.1",
+    "tailwindcss": "^3.4.4"
   }
 }
