@@ -47,12 +47,17 @@ The backend API used in this application is provided by [EAI-HospitalManagement]
 
    ```
 
-2. ```bash
+2. Install depedencies:
+
+   ```bash
    npm install
 
    ```
 
-3. ```bash
+3. Run react server:
+
+```bash
    npm run start
-   ```
-   The application will run at http://localhost:7000
+```
+
+The application will run at http://localhost:7000
