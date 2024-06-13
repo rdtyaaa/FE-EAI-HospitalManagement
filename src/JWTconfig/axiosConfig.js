@@ -1,4 +1,3 @@
-// axiosConfig.js
 import axios from "axios";
 
 const createAxiosInstance = (serviceURL) => {

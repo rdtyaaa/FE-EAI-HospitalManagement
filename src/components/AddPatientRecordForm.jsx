@@ -163,134 +163,132 @@ const AddPatientRecordForm = ({ onPatientAdded }) => {
   };
 
   return (
-    <div className="p-4 sm:ml-64">
-      <main className="container mx-auto p-4">
-        <h1 className="text-3xl tracking-tight font-bold mb-2 text-white">
-          Manage Patient Record
-        </h1>
-        <section className="mb-8">
-          <h2 className="text-lg font-medium mb-2 text-gray-400">
-            Add New Medical Patient
-          </h2>
-          <form
-            id="add-medical-patient-form"
-            className="bg-gradient-to-tr from-gray-600 via-gray-700 via-15% to-slate-600 p-6 rounded-lg shadow-md"
-            onSubmit={handleSubmit}
-          >
-            <div className="mb-4">
-              <label htmlFor="identityNumber" className="block text-gray-300">
-                Identity Number
-              </label>
-              <input
-                type="text"
-                id="identityNumber"
-                name="identityNumber"
-                value={formValues.identityNumber}
-                onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded mt-1 text-gray-900"
-              />
-              {errors.identityNumber && (
-                <p className="text-red-500 text-sm">{errors.identityNumber}</p>
-              )}
-            </div>
-            <div className="mb-4">
-              <label htmlFor="phoneNumber" className="block text-gray-300">
-                Phone Number
-              </label>
-              <input
-                type="text"
-                id="phoneNumber"
-                name="phoneNumber"
-                value={formValues.phoneNumber}
-                onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded mt-1 text-gray-900"
-              />
-              {errors.phoneNumber && (
-                <p className="text-red-500 text-sm">{errors.phoneNumber}</p>
-              )}
-            </div>
-            <div className="mb-4">
-              <label htmlFor="name" className="block text-gray-300">
-                Name
-              </label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                value={formValues.name}
-                onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded mt-1 text-gray-900"
-              />
-              {errors.name && (
-                <p className="text-red-500 text-sm">{errors.name}</p>
-              )}
-            </div>
-            <div className="mb-4">
-              <label htmlFor="birthDate" className="block text-gray-300">
-                Birth Date
-              </label>
-              <input
-                type="date"
-                id="birthDate"
-                name="birthDate"
-                value={formValues.birthDate}
-                onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded mt-1 text-gray-900"
-              />
-              {errors.birthDate && (
-                <p className="text-red-500 text-sm">{errors.birthDate}</p>
-              )}
-            </div>
-            <div className="mb-4">
-              <label htmlFor="gender" className="block text-gray-300">
-                Gender
-              </label>
-              <select
-                id="gender"
-                name="gender"
-                value={formValues.gender}
-                onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded mt-1 text-gray-900"
-              >
-                <option value="">Select Gender</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-              </select>
-              {errors.gender && (
-                <p className="text-red-500 text-sm">{errors.gender}</p>
-              )}
-            </div>
-            <div className="mb-4">
-              <label
-                htmlFor="identityCardScanImg"
-                className="block text-gray-300"
-              >
-                Identity Card Scan Image
-              </label>
-              <input
-                type="file"
-                id="identityCardScanImg"
-                name="identityCardScanImg"
-                onChange={handleFileChange}
-                className="w-full border border-gray-300 bg-white rounded mt-1 text-gray-900"
-              />
-              {errors.identityCardScanImg && (
-                <p className="text-red-500 text-sm">
-                  {errors.identityCardScanImg}
-                </p>
-              )}
-            </div>
-            <button
-              type="submit"
-              className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-700"
-              disabled={isLoading}
+    <main className="container mx-auto p-4">
+      <h1 className="text-3xl tracking-tight font-bold mb-2 text-white">
+        Manage Patient Record
+      </h1>
+      <section className="mb-8">
+        <h2 className="text-lg font-medium mb-2 text-gray-400">
+          Add New Medical Patient
+        </h2>
+        <form
+          id="add-medical-patient-form"
+          className="bg-gradient-to-tr from-gray-600 via-gray-700 via-15% to-slate-600 p-6 rounded-lg shadow-md"
+          onSubmit={handleSubmit}
+        >
+          <div className="mb-4">
+            <label htmlFor="identityNumber" className="block text-gray-300">
+              Identity Number
+            </label>
+            <input
+              type="text"
+              id="identityNumber"
+              name="identityNumber"
+              value={formValues.identityNumber}
+              onChange={handleInputChange}
+              className="w-full p-2 border border-gray-300 rounded mt-1 text-gray-900"
+            />
+            {errors.identityNumber && (
+              <p className="text-red-500 text-sm">{errors.identityNumber}</p>
+            )}
+          </div>
+          <div className="mb-4">
+            <label htmlFor="phoneNumber" className="block text-gray-300">
+              Phone Number
+            </label>
+            <input
+              type="text"
+              id="phoneNumber"
+              name="phoneNumber"
+              value={formValues.phoneNumber}
+              onChange={handleInputChange}
+              className="w-full p-2 border border-gray-300 rounded mt-1 text-gray-900"
+            />
+            {errors.phoneNumber && (
+              <p className="text-red-500 text-sm">{errors.phoneNumber}</p>
+            )}
+          </div>
+          <div className="mb-4">
+            <label htmlFor="name" className="block text-gray-300">
+              Name
+            </label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              value={formValues.name}
+              onChange={handleInputChange}
+              className="w-full p-2 border border-gray-300 rounded mt-1 text-gray-900"
+            />
+            {errors.name && (
+              <p className="text-red-500 text-sm">{errors.name}</p>
+            )}
+          </div>
+          <div className="mb-4">
+            <label htmlFor="birthDate" className="block text-gray-300">
+              Birth Date
+            </label>
+            <input
+              type="date"
+              id="birthDate"
+              name="birthDate"
+              value={formValues.birthDate}
+              onChange={handleInputChange}
+              className="w-full p-2 border border-gray-300 rounded mt-1 text-gray-900"
+            />
+            {errors.birthDate && (
+              <p className="text-red-500 text-sm">{errors.birthDate}</p>
+            )}
+          </div>
+          <div className="mb-4">
+            <label htmlFor="gender" className="block text-gray-300">
+              Gender
+            </label>
+            <select
+              id="gender"
+              name="gender"
+              value={formValues.gender}
+              onChange={handleInputChange}
+              className="w-full p-2 border border-gray-300 rounded mt-1 text-gray-900"
             >
-              {isLoading ? "Adding..." : "Add Patient"}
-            </button>
-          </form>
-        </section>
-      </main>
-    </div>
+              <option value="">Select Gender</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
+            {errors.gender && (
+              <p className="text-red-500 text-sm">{errors.gender}</p>
+            )}
+          </div>
+          <div className="mb-4">
+            <label
+              htmlFor="identityCardScanImg"
+              className="block text-gray-300"
+            >
+              Identity Card Scan Image
+            </label>
+            <input
+              type="file"
+              id="identityCardScanImg"
+              name="identityCardScanImg"
+              onChange={handleFileChange}
+              className="w-full border border-gray-300 bg-white rounded mt-1 text-gray-900"
+            />
+            {errors.identityCardScanImg && (
+              <p className="text-red-500 text-sm">
+                {errors.identityCardScanImg}
+              </p>
+            )}
+          </div>
+          <button
+            type="submit"
+            className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-700"
+            disabled={isLoading}
+          >
+            {isLoading ? "Adding..." : "Add Patient"}
+          </button>
+        </form>
+      </section>
+    </main>
   );
 };
 

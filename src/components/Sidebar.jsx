@@ -45,7 +45,7 @@ const Sidebar = () => {
             <ul className="w-full">
               <li>
                 <Link
-                  to="/"
+                  to="/dashboard"
                   className="flex w-full items-center p-2 text-white rounded-lg dark:text-white hover:bg-gray-900 dark:hover:bg-gray-700 group"
                 >
                   <svg
@@ -101,7 +101,7 @@ const Sidebar = () => {
                       clipRule="evenodd"
                     />
                   </svg>
-                  <span className="ms-2 text-sm">Manage Nurse</span>
+                  <span className="ms-2 text-sm">Manage User</span>
                 </Link>
               </li>
               <li>

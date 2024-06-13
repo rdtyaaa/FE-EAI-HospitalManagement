@@ -38,66 +38,62 @@ const PatientRecordTable = () => {
   };
 
   return (
-    <div className="p-4 sm:ml-64">
-      <main className="container mx-auto p-4">
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-2 text-white">
-            Medical Patient List
-          </h2>
-          <div className="overflow-x-auto rounded-lg">
-            <table className="min-w-full bg-white border border-gray-300 rounded-lg bg-gradient-to-tr from-gray-200 via-gray-100 via-15% to-slate-100">
-              <thead>
-                <tr>
-                  <th className="py-2 px-4 border-b text-gray-700">
-                    Identity Number
-                  </th>
-                  <th className="py-2 px-4 border-b text-gray-700">
-                    Phone Number
-                  </th>
-                  <th className="py-2 px-4 border-b text-gray-700">Name</th>
-                  <th className="py-2 px-4 border-b text-gray-700">
-                    Birth Date
-                  </th>
-                  <th className="py-2 px-4 border-b text-gray-700">Gender</th>
-                  <th className="py-2 px-4 border-b text-gray-700">Actions</th>
+    <main className="container mx-auto p-4">
+      <section className="mb-8">
+        <h2 className="text-xl font-semibold mb-2 text-white">
+          Medical Patient List
+        </h2>
+        <div className="overflow-x-auto rounded-lg">
+          <table className="min-w-full bg-white border border-gray-300 rounded-lg bg-gradient-to-tr from-gray-200 via-gray-100 via-15% to-slate-100">
+            <thead>
+              <tr>
+                <th className="py-2 px-4 border-b text-gray-700">
+                  Identity Number
+                </th>
+                <th className="py-2 px-4 border-b text-gray-700">
+                  Phone Number
+                </th>
+                <th className="py-2 px-4 border-b text-gray-700">Name</th>
+                <th className="py-2 px-4 border-b text-gray-700">Birth Date</th>
+                <th className="py-2 px-4 border-b text-gray-700">Gender</th>
+                <th className="py-2 px-4 border-b text-gray-700">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="text-center">
+              {patientRecords.map((record) => (
+                <tr key={record.identityNumber}>
+                  <td className="py-2 px-4 border-b text-gray-600">
+                    {record.identityNumber}
+                  </td>
+                  <td className="py-2 px-4 border-b text-gray-600">
+                    {record.phoneNumber}
+                  </td>
+                  <td className="py-2 px-4 border-b text-gray-600">
+                    {record.name}
+                  </td>
+                  <td className="py-2 px-4 border-b text-gray-600">
+                    {formatBirthDate(record.birthDate)}
+                  </td>
+                  <td className="py-2 px-4 border-b text-gray-600">
+                    {record.gender}
+                  </td>
+                  <td className="py-2 px-4 border-b text-gray-600">
+                    {new Date(record.createdAt).toLocaleString("en-US", {
+                      hour12: true,
+                      hour: "numeric",
+                      minute: "numeric",
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                    })}
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="text-center">
-                {patientRecords.map((record) => (
-                  <tr key={record.identityNumber}>
-                    <td className="py-2 px-4 border-b text-gray-600">
-                      {record.identityNumber}
-                    </td>
-                    <td className="py-2 px-4 border-b text-gray-600">
-                      {record.phoneNumber}
-                    </td>
-                    <td className="py-2 px-4 border-b text-gray-600">
-                      {record.name}
-                    </td>
-                    <td className="py-2 px-4 border-b text-gray-600">
-                      {formatBirthDate(record.birthDate)}
-                    </td>
-                    <td className="py-2 px-4 border-b text-gray-600">
-                      {record.gender}
-                    </td>
-                    <td className="py-2 px-4 border-b text-gray-600">
-                      {new Date(record.createdAt).toLocaleString("en-US", {
-                        hour12: true,
-                        hour: "numeric",
-                        minute: "numeric",
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                      })}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      </main>
-    </div>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
   );
 };
 

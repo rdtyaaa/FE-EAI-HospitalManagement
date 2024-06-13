@@ -10,7 +10,7 @@ const PatientRecord = () => {
   };
 
   return (
-    <div>
+    <div className="p-4 sm:ml-64">
       <AddPatientRecordForm onPatientAdded={refreshRecords} />
       <PatientRecordTable key={refreshKey} />
     </div>
