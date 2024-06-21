@@ -61,7 +61,7 @@ const Sidebar = () => {
                   <span className="ms-3 text-sm">Home</span>
                 </Link>
               </li>
-              <li>
+              {/* <li>
                 <Link
                   to="/search"
                   className="flex w-full items-center p-2 text-white rounded-lg dark:text-white hover:bg-gray-900 dark:hover:bg-gray-700 group"
@@ -81,7 +81,7 @@ const Sidebar = () => {
                   </svg>
                   <span className="ms-2 text-sm">Search</span>
                 </Link>
-              </li>
+              </li> */}
             </ul>
             <ul className="py-4 mt-4 space-y-2 border-y border-gray-200 dark:border-gray-700">
               <li>

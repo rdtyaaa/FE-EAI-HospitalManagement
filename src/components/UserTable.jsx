@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import axiosInstance from "../JWTconfig/axiosConfig";
+import createAxiosInstance from "../JWTconfig/axiosConfig";
 
 const UserTable = () => {
+  const axiosInstance = React.useMemo(
+    () => createAxiosInstance("http://127.0.0.1:4000/v1/"),
+    []
+  );
+
   const [nurseData, setNurseData] = useState({
     id: "",
     name: "",
@@ -12,25 +16,24 @@ const UserTable = () => {
   });
 
   const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState({}); // Ensure this matches expected structure
+
   const [users, setUsers] = useState([]);
 
-  // State untuk mengontrol visibilitas modal tambah dan modal edit
+  // State for modal visibility
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isGiveAccessModalOpen, setIsGiveAccessModalOpen] = useState(false);
+
   const accessToken = localStorage.getItem("accessToken");
-  const [selectedUser, setSelectedUser] = useState(null);
 
-  // OPEN AND CLOSE MODAL
-  const openCreateModal = () => {
-    setIsCreateModalOpen(true);
-  };
+  const [isItChecked, setIsItChecked] = useState(false);
+  const [isNurseChecked, setIsNurseChecked] = useState(false);
 
-  const closeCreateModal = () => {
-    setIsCreateModalOpen(false);
-  };
+  // Function to open and close modals
+  const openCreateModal = () => setIsCreateModalOpen(true);
+  const closeCreateModal = () => setIsCreateModalOpen(false);
 
   const openDeleteModal = (user) => {
     setNurseData({
@@ -40,9 +43,7 @@ const UserTable = () => {
     setIsDeleteModalOpen(true);
   };
 
-  const closeDeleteModal = () => {
-    setIsDeleteModalOpen(false);
-  };
+  const closeDeleteModal = () => setIsDeleteModalOpen(false);
 
   const openGiveAccessModal = (user) => {
     setNurseData({
@@ -52,9 +53,7 @@ const UserTable = () => {
     setIsGiveAccessModalOpen(true);
   };
 
-  const closeGiveAccessModal = () => {
-    setIsGiveAccessModalOpen(false);
-  };
+  const closeGiveAccessModal = () => setIsGiveAccessModalOpen(false);
 
   const openEditModal = (user) => {
     setNurseData({
@@ -65,26 +64,27 @@ const UserTable = () => {
     setIsEditModalOpen(true);
   };
 
-  const closeEditModal = () => {
-    setSelectedUser(null);
-    setIsEditModalOpen(false);
-  };
+  const closeEditModal = () => setIsEditModalOpen(false);
 
-  // HANDLE
+  const [searchType, setSearchType] = useState("name"); // Default search type is "name"
+  const [searchValue, setSearchValue] = useState("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  // Function to handle nurse creation
   const handleCreateNurse = async (event) => {
     event.preventDefault();
     setIsLoading(true);
+
     try {
-      const requestData = {
-        name: nurseData.name,
-        nip: parseInt(nurseData.nip),
-        password: nurseData.password,
-        identityCardScanImg: nurseData.identityCardScanImg,
-      };
-      console.log(requestData);
+      const formData = new FormData();
+      formData.append("name", nurseData.name);
+      formData.append("nip", nurseData.nip);
+      formData.append("password", nurseData.password);
+      formData.append("identityCardScanImg", nurseData.identityCardScanImg);
+
       const response = await axiosInstance.post(
         "/user/nurse/register",
-        requestData,
+        formData,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -92,101 +92,71 @@ const UserTable = () => {
           },
         }
       );
+
       console.log("Nurse added successfully:", response.data);
       closeCreateModal();
       setIsLoading(false);
-      window.location.reload();
+      window.location.reload(); // Consider using state updates instead of reload
     } catch (error) {
-      if (error.response) {
-        setErrors(error.response.data.message);
-      } else if (error.request) {
-        setErrors("No response received from server");
-      } else {
-        setErrors("Error: " + error.message);
-      }
-      setIsLoading(false);
+      handleAxiosError(error);
     }
   };
 
+  // Function to handle nurse edition
   const handleEditNurse = async (event) => {
     event.preventDefault();
-    try {
-      console.log("Nurse Data:", nurseData);
 
+    try {
       const response = await axiosInstance.put(`/user/nurse/${nurseData.id}`, {
         name: nurseData.name,
-        nip: parseInt(nurseData.nip),
+        nip: nurseData.nip,
       });
 
-      console.log("Response status:", response.status);
-      console.log("Response data:", response.data);
-
-      if (response.status === 200) {
-        console.log("Nurse updated successfully:", response.data);
-        closeEditModal();
-        window.location.reload();
-      } else {
-        console.error("Failed to update nurse. Status:", response.status);
-      }
+      console.log("Nurse updated successfully:", response.data);
+      closeEditModal();
+      window.location.reload(); // Consider using state updates instead of reload
     } catch (error) {
-      console.error("Error updating nurse:", error);
-      if (error.response) {
-        console.error("Error response data:", error.response.data);
-        console.error("Error response status:", error.response.status);
-      }
+      handleAxiosError(error);
     }
   };
 
+  // Function to handle granting access
   const handleGiveAccess = async (event) => {
     event.preventDefault();
     if (validatePasswords()) {
       try {
-        console.log(nurseData);
-
         const response = await axiosInstance.post(
           `/user/nurse/${nurseData.id}/access`,
           { password: nurseData.password }
         );
+
         console.log("Access granted successfully:", response.data);
         closeGiveAccessModal();
       } catch (error) {
-        console.error("Failed to grant access:", error);
-        if (error.response) {
-          console.error("Error response data:", error.response.data);
-          console.error("Error response status:", error.response.status);
-        }
+        handleAxiosError(error);
       }
     } else {
       console.error("Validation failed");
     }
   };
 
+  // Function to handle nurse deletion
   const handleDelete = async (event) => {
     event.preventDefault();
-    console.log(nurseData);
+
     try {
       const response = await axiosInstance.delete(
         `/user/nurse/${nurseData.id}`
       );
 
-      console.log("Response status:", response.status);
-      console.log("Response data:", response.data);
-
-      if (response.status === 200) {
-        console.log("Nurse deleted successfully:", response.data);
-        window.location.reload();
-      } else {
-        console.error("Failed to delete nurse. Status:", response.status);
-      }
+      console.log("Nurse deleted successfully:", response.data);
+      window.location.reload(); // Consider using state updates instead of reload
     } catch (error) {
-      console.error("Error deleting nurse:", error);
-      if (error.response) {
-        console.error("Error response data:", error.response.data);
-        console.error("Error response status:", error.response.status);
-      }
+      handleAxiosError(error);
     }
   };
 
+  // Function to handle input changes
   const handleInputChange = (event) => {
     const { name, value } = event.target;
 
@@ -196,6 +166,11 @@ const UserTable = () => {
     });
   };
 
+  const handleSearchTypeChange = (type) => {
+    setSearchType(type);
+  };
+
+  // Function to handle file upload
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
 
@@ -205,6 +180,7 @@ const UserTable = () => {
     });
   };
 
+  // Function to validate passwords
   const validatePasswords = () => {
     let tempErrors = {};
     if (nurseData.password !== nurseData.reenterPassword) {
@@ -217,6 +193,7 @@ const UserTable = () => {
     return Object.keys(tempErrors).length === 0;
   };
 
+  // Function to format date
   const formatDate = (dateString) => {
     const options = {
       weekday: "long",
@@ -227,22 +204,41 @@ const UserTable = () => {
       minute: "numeric",
       second: "numeric",
     };
-    const formattedDate = new Date(dateString).toLocaleDateString(
-      "en-US",
-      options
-    );
-    return formattedDate;
+    return new Date(dateString).toLocaleDateString("en-US", options);
   };
 
-  // FETCH USERS
+  // Function to fetch users
   const fetchUsers = async () => {
     try {
-      console.log("Bearer Token:", accessToken);
-      const response = await axiosInstance.get("/user/", {
+      let params = {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
-      });
+      };
+
+      if (isItChecked && !isNurseChecked) {
+        params.params = {
+          ...params.params,
+          role: "admin",
+        };
+      } else if (isNurseChecked && !isItChecked) {
+        params.params = {
+          ...params.params,
+          role: "nurse",
+        };
+      }
+
+      if (searchValue.trim() !== "") {
+        params.params = {
+          ...params.params,
+          [searchType]: searchValue.trim(),
+        };
+      }
+
+      const response = await axiosInstance.get("/user", params);
+      console.log("Request URL:", response.config.url);
+      console.log("Request params:", response.config.params);
+
       setUsers(response.data.data);
     } catch (error) {
       console.error("Failed to fetch users:", error);
@@ -250,9 +246,50 @@ const UserTable = () => {
   };
 
   useEffect(() => {
-    window.initFlowbite();
-    fetchUsers();
-  }, []);
+    window.initFlowbite(); // Assuming this is a function to initialize some UI library
+    fetchUsers(); // Fetch users on component mount
+
+    const handleClickOutside = (event) => {
+      const dropdown = document.getElementById("dropdown");
+      const dropdownButton = document.getElementById("dropdown-button");
+
+      if (
+        dropdown &&
+        dropdownButton &&
+        !dropdown.contains(event.target) &&
+        !dropdownButton.contains(event.target)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    window.addEventListener("click", handleClickOutside);
+
+    return () => {
+      window.removeEventListener("click", handleClickOutside);
+    };
+  }, [isItChecked, isNurseChecked, searchValue]);
+
+  // Helper function to handle axios errors
+  const handleAxiosError = (error) => {
+    console.error("Axios error:", error);
+    if (error.response) {
+      console.error("Error response data:", error.response.data);
+      console.error("Error response status:", error.response.status);
+      setErrors(error.response.data.message);
+    } else if (error.request) {
+      console.error("No response received from server");
+      setErrors("No response received from server");
+    } else {
+      console.error("Error:", error.message);
+      setErrors("Error: " + error.message);
+    }
+    setIsLoading(false);
+
+    const handleSearchTypeChange = (type) => {
+      setSearchType(type);
+    };
+  };
 
   return (
     <>
@@ -262,32 +299,85 @@ const UserTable = () => {
           <div className="dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden bg-gradient-to-tr from-gray-600 via-gray-700 via-15% to-slate-600">
             <div className="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4">
               <div className="w-full md:w-1/2">
-                <form className="flex items-center">
-                  <label htmlFor="simple-search" className="sr-only">
-                    Search
-                  </label>
-                  <div className="relative w-full">
-                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                <form className="w-full max-w-lg whitespace-nowrap">
+                  <div className="flex w-full relative">
+                    <button
+                      id="dropdown-button"
+                      className="flex items-center py-2.5 px-4 text-sm font-medium text-center bg-gray-100 border border-gray-300 rounded-s-lg text-gray-500"
+                      type="button"
+                      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    >
+                      {`Search By ${searchType === "name" ? "Name" : "NIP"}`}
                       <svg
+                        className="w-2.5 h-2.5 ms-2.5 text-gray-500"
                         aria-hidden="true"
-                        className="w-5 h-5 text-gray-500 dark:text-gray-400"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
                         xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 10 6"
                       >
                         <path
-                          fillRule="evenodd"
-                          d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                          clipRule="evenodd"
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="m1 1 4 4 4-4"
                         />
                       </svg>
+                    </button>
+                    <div
+                      id="dropdown"
+                      className={`${
+                        isDropdownOpen ? "" : "hidden"
+                      } z-10 absolute top-full mt-1 bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700`}
+                    >
+                      <ul
+                        className="py-2 text-sm text-gray-700 dark:text-gray-200"
+                        aria-labelledby="dropdown-button"
+                      >
+                        <li>
+                          <button
+                            type="button"
+                            className={`inline-flex w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white ${
+                              searchType === "name"
+                                ? "font-medium text-gray-900"
+                                : ""
+                            }`}
+                            onClick={() => {
+                              handleSearchTypeChange("name");
+                              setIsDropdownOpen(false);
+                            }}
+                          >
+                            Name
+                          </button>
+                        </li>
+                        <li>
+                          <button
+                            type="button"
+                            className={`inline-flex w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white ${
+                              searchType === "nip"
+                                ? "font-medium text-gray-900"
+                                : ""
+                            }`}
+                            onClick={() => {
+                              handleSearchTypeChange("nip");
+                              setIsDropdownOpen(false);
+                            }}
+                          >
+                            NIP
+                          </button>
+                        </li>
+                      </ul>
                     </div>
                     <input
-                      type="text"
-                      id="simple-search"
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                      placeholder="Search"
-                      required=""
+                      type="search"
+                      id="search-dropdown"
+                      className="block py-2.5 w-full z-20 text-sm text-gray-900 bg-gray-50 rounded-e-lg border-s-gray-50 border-s-2 border border-gray-300"
+                      placeholder={`Search by ${
+                        searchType === "name" ? "Name" : "NIP"
+                      }`}
+                      value={searchValue}
+                      onChange={(e) => setSearchValue(e.target.value)}
+                      required
                     />
                   </div>
                 </form>
@@ -314,7 +404,7 @@ const UserTable = () => {
                   </svg>
                   Add Nurse
                 </button>
-                <div className="flex items-center space-x-3 w-full md:w-auto">
+                <div className="relative flex items-center space-x-3 w-full md:w-auto">
                   <button
                     id="filterDropdownButton"
                     data-dropdown-toggle="filterDropdown"
@@ -351,10 +441,10 @@ const UserTable = () => {
                   </button>
                   <div
                     id="filterDropdown"
-                    className="z-10 hidden w-56 p-3 bg-white rounded-lg shadow dark:bg-gray-700"
+                    className="hidden absolute z-10 w-56 p-3 bg-white rounded-lg shadow dark:bg-gray-700"
                   >
                     <h6 className="mb-3 text-sm font-medium text-gray-900 dark:text-white">
-                      Category
+                      Role
                     </h6>
                     <ul
                       className="space-y-2 text-sm"
@@ -362,30 +452,36 @@ const UserTable = () => {
                     >
                       <li className="flex items-center">
                         <input
-                          id="apple"
+                          id="it"
                           type="checkbox"
-                          defaultValue=""
-                          className="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
+                          checked={isItChecked}
+                          onChange={(e) => {
+                            setIsItChecked(e.target.checked);
+                          }}
+                          className="w-4 h-4 rounded bg-gray-100 border-gray-300 text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
                         />
                         <label
-                          htmlFor="apple"
+                          htmlFor="it"
                           className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100"
                         >
-                          Nurse (56)
+                          IT
                         </label>
                       </li>
                       <li className="flex items-center">
                         <input
-                          id="fitbit"
+                          id="nurse"
                           type="checkbox"
-                          defaultValue=""
-                          className="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
+                          checked={isNurseChecked}
+                          onChange={(e) => {
+                            setIsNurseChecked(e.target.checked);
+                          }}
+                          className="w-4 h-4 rounded bg-gray-100 border-gray-300 text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
                         />
                         <label
-                          htmlFor="fitbit"
+                          htmlFor="nurse"
                           className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100"
                         >
-                          IT (56)
+                          Nurse
                         </label>
                       </li>
                     </ul>
@@ -499,10 +595,6 @@ const UserTable = () => {
                 <span className="font-semibold px-2 text-white dark:text-white">
                   {users.length}
                 </span>
-                {/* of
-                <span className="font-semibold px-2 text-white dark:text-white">
-                  {totalUsers}
-                </span> */}
               </span>
             </nav>
           </div>
@@ -694,10 +786,10 @@ const UserTable = () => {
                       type="text"
                       id="nip"
                       name="nip"
-                      value={nurseData.nip} // Pastikan nurseData.nip sesuai dengan data yang sedang diedit
+                      value={nurseData.nip}
                       onChange={handleInputChange}
                       className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                      //   disabled
+                      disabled
                     />
                   </div>
                 </div>

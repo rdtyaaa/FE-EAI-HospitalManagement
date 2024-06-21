@@ -3,18 +3,6 @@ import { useState } from "react";
 import { Button, TextInput } from "flowbite-react";
 
 function Dashboard() {
-  const [searchQuery, setSearchQuery] = useState("");
-
-  const handleSearchChange = (event) => {
-    setSearchQuery(event.target.value);
-  };
-
-  const handleSearchSubmit = (event) => {
-    event.preventDefault();
-    // Implement search functionality here
-    console.log("Search query:", searchQuery);
-  };
-
   return (
     <>
       <div className="p-4 sm:ml-64 flex items-center justify-center h-screen h-screen">
@@ -26,7 +14,7 @@ function Dashboard() {
             Manage all your hospital records and patient information efficiently
             and effectively.
           </p>
-          <div className="flex justify-center">
+          {/* <div className="flex justify-center">
             <form onSubmit={handleSearchSubmit} className="w-full max-w-lg">
               <form className="max-w-lg mx-auto">
                 <div className="flex">
@@ -118,7 +106,7 @@ function Dashboard() {
                 </div>
               </form>
             </form>
-          </div>
+          </div> */}
         </div>
       </div>
     </>
