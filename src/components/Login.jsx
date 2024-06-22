@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import createAxiosInstance from "../JWTconfig/axiosConfig"; // Import Axios instance creator from axiosConfig.js
-import { Link } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
+import { renewToken } from "../JWTconfig/renewToken"; // Import renewToken function
 
 function Login() {
   const [userType, setUserType] = useState("it");
@@ -9,6 +10,7 @@ function Login() {
   const [nipError, setNipError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate(); // Use useNavigate hook to get navigation function
 
   // Create axios instance with base URL
   const axiosInstance = createAxiosInstance("http://127.0.0.1:3000/v1/");
@@ -24,6 +26,29 @@ function Login() {
     } else {
       setUserType("");
       setNipError("User not found or not from the correct department.");
+    }
+  };
+
+  useEffect(() => {
+    // Check if there is a refresh token in localStorage
+    const refreshToken = localStorage.getItem("refreshToken");
+    if (refreshToken) {
+      renewAccessToken(refreshToken);
+    }
+  }, []);
+
+  // Function to renew access token using refresh token
+  const renewAccessToken = async (refreshToken) => {
+    try {
+      const newToken = await renewToken(refreshToken); // Call renewToken function
+      console.log("Token renewed successfully:", newToken);
+      localStorage.setItem("accessToken", newToken);
+
+      // Redirect back to previous page using navigate function
+      navigate(-1);
+    } catch (error) {
+      console.error("Failed to renew token:", error);
+      // Handle error (e.g., show message to user)
     }
   };
 
@@ -56,15 +81,18 @@ function Login() {
       if (response.status === 200) {
         const { data } = response.data;
 
-        // Pastikan accessToken ada dan memiliki nilai sebelum disimpan
-        if (data.accessToken) {
+        // Ensure accessToken exists and has a value before storing
+        if (data.token.accessToken) {
           localStorage.setItem("isLoggedIn", "true");
-          localStorage.setItem("accessToken", data.accessToken);
-          // const token = localStorage.getItem("accessToken");
-          // console.log("Token set to localStorage:", token);
-          window.location.href = "/dashboard";
+          localStorage.setItem("accessToken", data.token.accessToken);
+          localStorage.setItem("refreshToken", data.token.refreshToken);
+          // Redirect to dashboard
+          navigate("/dashboard");
         } else {
-          console.error("Access token is undefined or null:", data.accessToken);
+          console.error(
+            "Access token is undefined or null:",
+            data.token.accessToken
+          );
         }
       }
     } catch (error) {

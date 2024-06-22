@@ -1,47 +1,51 @@
-import React from "react";
+// ProtectedRoute.js
+import React, { useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
+import { decodeToken } from "./jwtUtils";
+import { renewToken } from "./renewToken";
 
 const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem("accessToken");
+  const [token, setToken] = useState(localStorage.getItem("accessToken"));
 
-  if (!token) {
-    return <Navigate to="/login" replace />;
-  }
+  useEffect(() => {
+    const checkToken = async () => {
+      if (!token) {
+        return; // Token kosong, tidak perlu cek lebih lanjut
+      }
+      try {
+        const decodedToken = decodeToken(token);
+        const currentTime = Date.now() / 1000;
 
-  try {
-    // Pastikan untuk mengubah waktu kadaluarsa yang ada di token jika diperlukan
-    const decodedToken = parseJwt(token);
-    const currentTime = Date.now() / 1000;
+        if (decodedToken.expires < currentTime) {
+          try {
+            const newToken = await renewToken(); // Memperbarui token
+            console.log("Token renewed:", newToken);
+            localStorage.setItem("accessToken", newToken); // Simpan token baru ke localStorage
+            setToken(newToken); // Update state token jika perlu
+            window.location.reload();
+          } catch (error) {
+            console.error("Failed to renew token:", error);
+            if (error.response) {
+              console.error("Error response status:", error.response.status);
+              console.error("Error response data:", error.response.data);
+            }
+            // Tambahkan pesan error atau handle sesuai kebutuhan
+          }
+        }
+      } catch (error) {
+        console.error("Token decoding failed:", error);
+        // Tambahkan pesan error atau handle sesuai kebutuhan
+      }
+    };
 
-    if (decodedToken.exp < currentTime) {
-      localStorage.removeItem("accessToken");
-      return <Navigate to="/login" replace />;
-    }
+    checkToken(); // Panggil fungsi cek token saat komponen di-mount
 
-    return children ? children : <Outlet />;
-  } catch (error) {
-    console.error("Failed to parse token:", error);
-    localStorage.removeItem("accessToken");
-    return <Navigate to="/login" replace />;
-  }
+    const interval = setInterval(checkToken, 10000); // Cek setiap 10 detik
+
+    return () => clearInterval(interval); // Bersihkan interval saat komponen dilepas
+  }, [token]); // Tergantung pada token untuk memicu useEffect
+
+  return children ? children : <Outlet />; // Render children atau Outlet jika ada
 };
-
-// Fungsi sederhana untuk menguraikan token JWT (menggunakan contoh saja)
-function parseJwt(token) {
-  try {
-    const base64Url = token.split(".")[1];
-    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split("")
-        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
-        .join("")
-    );
-
-    return JSON.parse(jsonPayload);
-  } catch (error) {
-    throw new Error("Invalid token");
-  }
-}
 
 export default ProtectedRoute;

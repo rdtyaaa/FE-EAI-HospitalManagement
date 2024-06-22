@@ -29,9 +29,7 @@ const Sidebar = () => {
         setJwtToken(token);
 
         // Set initial expiration time
-        const currentTime = Date.now() / 1000; // Current time in seconds
         const tokenExp = decodedToken.expires; // Token expiration time in seconds
-        const timeLeft = tokenExp - currentTime;
 
         const calculateTimeLeft = () => {
           const currentTime = Date.now() / 1000; // Update current time
@@ -43,7 +41,6 @@ const Sidebar = () => {
             setTokenExpiration({ minutes, seconds });
           } else {
             clearInterval(interval); // Clear interval if token has expired
-            handleLogout(); // Optional: logout user when token expires
           }
         };
 
@@ -195,7 +192,7 @@ const Sidebar = () => {
               Log Out
             </button>
           </div>
-          <div className="text-white text-2xs flex-wrap">
+          <div className="text-white text-2xs w-52 flex-wrap break-all text-wrap">
             <h2>JWT Information</h2>
             <p>Token: {jwtToken}</p>
             <p>
