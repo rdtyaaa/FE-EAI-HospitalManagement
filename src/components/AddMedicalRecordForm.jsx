@@ -44,22 +44,41 @@ const AddMedicalRecordForm = () => {
         setSubmitMessage("Failed to add medical record.");
       }
     } catch (error) {
-      if (error.response && error.response.status === 400) {
-        console.error("Validation error:", error.response.data.message);
-        setSubmitMessage(error.response.data.message);
-      } else if (error.response && error.response.status === 404) {
-        console.error(
-          "Identity number not found:",
-          error.response.data.message
-        );
-        setSubmitMessage("Identity number not found.");
-      } else if (error.response && error.response.status === 401) {
-        console.error("Unauthorized:", error.response.data.message);
-        setSubmitMessage("Unauthorized.");
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        console.error("Response error data:", error.response.data);
+        console.error("Response error status:", error.response.status);
+        console.error("Response error headers:", error.response.headers);
+
+        if (error.response.status === 400) {
+          console.error("Validation error:", error.response.data.message);
+          setSubmitMessage(error.response.data.message);
+        } else if (error.response.status === 404) {
+          console.error(
+            "Identity number not found:",
+            error.response.data.message
+          );
+          setSubmitMessage("Identity number not found.");
+        } else if (error.response.status === 401) {
+          console.error("Unauthorized:", error.response.data.message);
+          setSubmitMessage("Unauthorized.");
+        } else {
+          console.error(
+            "Unexpected response error:",
+            error.response.data.message
+          );
+          setSubmitMessage("Unexpected error. Please try again.");
+        }
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.error("Request made, no response received:", error.request);
+        setSubmitMessage("No response from server. Please try again later.");
       } else {
-        console.error("Error adding medical record:", error.message);
+        // Something happened in setting up the request that triggered an Error
+        console.error("Error in setting up request:", error.message);
         setSubmitMessage(
-          "Error adding medical records.  Check the identity number, make sure it's registered!"
+          "Error adding medical records. Check the identity number, make sure it's registered!"
         );
       }
     } finally {

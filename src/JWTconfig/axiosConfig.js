@@ -23,7 +23,7 @@ const createAxiosInstance = (serviceURL) => {
         error.response &&
         (error.response.status === 401 || error.response.status === 403)
       ) {
-        localStorage.removeItem("accessToken");
+        localStorage.clear();
         // navigate('/login'); // Navigasi akan dilakukan di komponen
       }
       return Promise.reject(error);

@@ -29,29 +29,6 @@ function Login() {
     }
   };
 
-  useEffect(() => {
-    // Check if there is a refresh token in localStorage
-    const refreshToken = localStorage.getItem("refreshToken");
-    if (refreshToken) {
-      renewAccessToken(refreshToken);
-    }
-  }, []);
-
-  // Function to renew access token using refresh token
-  const renewAccessToken = async (refreshToken) => {
-    try {
-      const newToken = await renewToken(refreshToken); // Call renewToken function
-      console.log("Token renewed successfully:", newToken);
-      localStorage.setItem("accessToken", newToken);
-
-      // Redirect back to previous page using navigate function
-      navigate(-1);
-    } catch (error) {
-      console.error("Failed to renew token:", error);
-      // Handle error (e.g., show message to user)
-    }
-  };
-
   const handleLogin = async (event) => {
     event.preventDefault();
     setNipError("");
@@ -64,8 +41,10 @@ function Login() {
       let loginUrl = "";
       if (userType === "it") {
         loginUrl = "/user/admin/login";
+        localStorage.setItem("userType", "it");
       } else if (userType === "nurse") {
         loginUrl = "/user/nurse/login";
+        localStorage.setItem("userType", "nurse");
       }
 
       const response = await axiosInstance.post(
@@ -88,6 +67,7 @@ function Login() {
           localStorage.setItem("refreshToken", data.token.refreshToken);
           // Redirect to dashboard
           navigate("/dashboard");
+          window.location.reload();
         } else {
           console.error(
             "Access token is undefined or null:",

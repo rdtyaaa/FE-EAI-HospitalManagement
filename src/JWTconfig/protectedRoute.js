@@ -9,41 +9,40 @@ const ProtectedRoute = ({ children }) => {
 
   useEffect(() => {
     const checkToken = async () => {
-      if (!token) {
-        return; // Token kosong, tidak perlu cek lebih lanjut
-      }
       try {
         const decodedToken = decodeToken(token);
         const currentTime = Date.now() / 1000;
 
         if (decodedToken.expires < currentTime) {
           try {
-            const newToken = await renewToken(); // Memperbarui token
+            const newToken = await renewToken();
             console.log("Token renewed:", newToken);
-            localStorage.setItem("accessToken", newToken); // Simpan token baru ke localStorage
-            setToken(newToken); // Update state token jika perlu
+            localStorage.setItem("accessToken", newToken);
+            setToken(newToken);
             window.location.reload();
           } catch (error) {
             console.error("Failed to renew token:", error);
+            localStorage.clear();
+            window.location.reload();
             if (error.response) {
               console.error("Error response status:", error.response.status);
               console.error("Error response data:", error.response.data);
+              localStorage.clear();
+              window.location.reload();
             }
-            // Tambahkan pesan error atau handle sesuai kebutuhan
           }
         }
       } catch (error) {
         console.error("Token decoding failed:", error);
-        // Tambahkan pesan error atau handle sesuai kebutuhan
       }
     };
 
-    checkToken(); // Panggil fungsi cek token saat komponen di-mount
+    checkToken();
 
-    const interval = setInterval(checkToken, 10000); // Cek setiap 10 detik
+    const interval = setInterval(checkToken, 10000);
 
-    return () => clearInterval(interval); // Bersihkan interval saat komponen dilepas
-  }, [token]); // Tergantung pada token untuk memicu useEffect
+    return () => clearInterval(interval);
+  }, [token]);
 
   return children ? children : <Outlet />; // Render children atau Outlet jika ada
 };

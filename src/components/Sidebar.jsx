@@ -12,8 +12,7 @@ const Sidebar = () => {
 
   const handleLogout = () => {
     // Clear the user's token from storage
-    localStorage.removeItem("isLoggedIn"); // or sessionStorage.removeItem('accessToken');
-    localStorage.removeItem("accessToken");
+    localStorage.clear();
 
     // Navigate to login page or home page
     navigate("/login"); // Redirect to login page after logout
@@ -56,7 +55,7 @@ const Sidebar = () => {
       }
     }
   }, [navigate]);
-
+  const userType = localStorage.getItem("userType");
   return (
     <>
       <button
@@ -109,26 +108,28 @@ const Sidebar = () => {
               </li>
             </ul>
             <ul className="py-4 mt-4 space-y-2 border-y border-gray-200 dark:border-gray-700">
-              <li>
-                <Link
-                  to="/manage/nurse"
-                  className="flex w-full items-center p-2 text-white rounded-lg dark:text-white hover:bg-gray-900 dark:hover:bg-gray-700 group"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    className="size-6"
+              {userType === "it" && (
+                <li>
+                  <Link
+                    to="/manage/nurse"
+                    className="flex w-full items-center p-2 text-white rounded-lg dark:text-white hover:bg-gray-900 dark:hover:bg-gray-700 group"
                   >
-                    <path
-                      fillRule="evenodd"
-                      d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <span className="ms-2 text-sm">Manage User</span>
-                </Link>
-              </li>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      className="size-6"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <span className="ms-2 text-sm">Manage User</span>
+                  </Link>
+                </li>
+              )}
               <li>
                 <button
                   type="button"
