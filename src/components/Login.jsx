@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { Link } from "react-router-dom"; // Import Link from react-router-dom
+import React, { useState } from "react";
+import createAxiosInstance from "../JWTconfig/axiosConfig"; // Import Axios instance creator from axiosConfig.js
+import { Link } from "react-router-dom";
 
 function Login() {
   const [userType, setUserType] = useState("it");
@@ -10,21 +10,40 @@ function Login() {
   const [passwordError, setPasswordError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Create axios instance with base URL
+  const axiosInstance = createAxiosInstance("http://127.0.0.1:3000/v1/");
+
+  // Function to validate NIP prefix and set appropriate error message
+  const validateNipPrefix = (inputNip) => {
+    if (inputNip.startsWith("615")) {
+      setUserType("it");
+      setNipError("");
+    } else if (inputNip.startsWith("303")) {
+      setUserType("nurse");
+      setNipError("");
+    } else {
+      setUserType("");
+      setNipError("User not found or not from the correct department.");
+    }
+  };
+
   const handleLogin = async (event) => {
     event.preventDefault();
-    setNipError(""); // Clear previous errors
-    setPasswordError(""); // Clear previous errors
+    setNipError("");
+    setPasswordError("");
     setLoading(true);
 
-    let loginUrl = "";
-    if (userType === "it") {
-      loginUrl = "http://127.0.0.1:3000/v1/user/admin/login";
-    } else if (userType === "nurse") {
-      loginUrl = "http://127.0.0.1:3000/v1/user/nurse/login";
-    }
+    validateNipPrefix(nip);
 
     try {
-      const response = await axios.post(
+      let loginUrl = "";
+      if (userType === "it") {
+        loginUrl = "/user/admin/login";
+      } else if (userType === "nurse") {
+        loginUrl = "/user/nurse/login";
+      }
+
+      const response = await axiosInstance.post(
         loginUrl,
         { nip: parseInt(nip, 10), password },
         {
@@ -32,23 +51,37 @@ function Login() {
         }
       );
 
+      console.log("Response data:", response.data); // Log the response data
+
       if (response.status === 200) {
-        const accessToken = response.data.data.accessToken;
-        localStorage.setItem("isLoggedIn", "true");
-        localStorage.setItem("accessToken", accessToken);
-        window.location.href = "/dashboard";
+        const { data } = response.data;
+
+        // Pastikan accessToken ada dan memiliki nilai sebelum disimpan
+        if (data.accessToken) {
+          localStorage.setItem("isLoggedIn", "true");
+          localStorage.setItem("accessToken", data.accessToken);
+          // const token = localStorage.getItem("accessToken");
+          // console.log("Token set to localStorage:", token);
+          window.location.href = "/dashboard";
+        } else {
+          console.error("Access token is undefined or null:", data.accessToken);
+        }
       }
     } catch (error) {
       if (error.response) {
-        if (error.response.status === 404) {
-          setNipError("User not found or not from the correct department.");
-        } else if (error.response.status === 400) {
-          if (error.response.data.errors) {
-            if (error.response.data.errors.nip) {
-              setNipError(error.response.data.errors.nip);
+        const { status, data } = error.response;
+        console.log("Error response status:", status); // Log the error status
+        console.log("Error response data:", data); // Log the error data
+
+        if (status === 404) {
+          setNipError("User not found");
+        } else if (status === 400) {
+          if (data.errors) {
+            if (data.errors.nip) {
+              setNipError(data.errors.nip);
             }
-            if (error.response.data.errors.password) {
-              setPasswordError(error.response.data.errors.password);
+            if (data.errors.password) {
+              setPasswordError(data.errors.password);
             }
           } else {
             setNipError("Validation error or incorrect password");
@@ -57,7 +90,8 @@ function Login() {
           setNipError("Server error, please try again later.");
         }
       } else {
-        alert("Network error, please try again later.");
+        console.log("Network error:", error.message); // Log the network error
+        setNipError("Network error, please try again later.");
       }
     } finally {
       setLoading(false);

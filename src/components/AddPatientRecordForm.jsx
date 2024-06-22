@@ -173,41 +173,9 @@ const AddPatientRecordForm = ({ onPatientAdded }) => {
         </h2>
         <form
           id="add-medical-patient-form"
-          className="bg-gradient-to-tr from-gray-600 via-gray-700 via-15% to-slate-600 p-6 rounded-lg shadow-md"
+          className="grid grid-cols-3 gap-4 bg-gradient-to-tr from-gray-600 via-gray-700 via-15% to-slate-600 p-6 rounded-lg shadow-md"
           onSubmit={handleSubmit}
         >
-          <div className="mb-4">
-            <label htmlFor="identityNumber" className="block text-gray-300">
-              Identity Number
-            </label>
-            <input
-              type="text"
-              id="identityNumber"
-              name="identityNumber"
-              value={formValues.identityNumber}
-              onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded mt-1 text-gray-900"
-            />
-            {errors.identityNumber && (
-              <p className="text-red-500 text-sm">{errors.identityNumber}</p>
-            )}
-          </div>
-          <div className="mb-4">
-            <label htmlFor="phoneNumber" className="block text-gray-300">
-              Phone Number
-            </label>
-            <input
-              type="text"
-              id="phoneNumber"
-              name="phoneNumber"
-              value={formValues.phoneNumber}
-              onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded mt-1 text-gray-900"
-            />
-            {errors.phoneNumber && (
-              <p className="text-red-500 text-sm">{errors.phoneNumber}</p>
-            )}
-          </div>
           <div className="mb-4">
             <label htmlFor="name" className="block text-gray-300">
               Name
@@ -225,38 +193,19 @@ const AddPatientRecordForm = ({ onPatientAdded }) => {
             )}
           </div>
           <div className="mb-4">
-            <label htmlFor="birthDate" className="block text-gray-300">
-              Birth Date
+            <label htmlFor="identityNumber" className="block text-gray-300">
+              Identity Number
             </label>
             <input
-              type="date"
-              id="birthDate"
-              name="birthDate"
-              value={formValues.birthDate}
+              type="text"
+              id="identityNumber"
+              name="identityNumber"
+              value={formValues.identityNumber}
               onChange={handleInputChange}
               className="w-full p-2 border border-gray-300 rounded mt-1 text-gray-900"
             />
-            {errors.birthDate && (
-              <p className="text-red-500 text-sm">{errors.birthDate}</p>
-            )}
-          </div>
-          <div className="mb-4">
-            <label htmlFor="gender" className="block text-gray-300">
-              Gender
-            </label>
-            <select
-              id="gender"
-              name="gender"
-              value={formValues.gender}
-              onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded mt-1 text-gray-900"
-            >
-              <option value="">Select Gender</option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-            </select>
-            {errors.gender && (
-              <p className="text-red-500 text-sm">{errors.gender}</p>
+            {errors.identityNumber && (
+              <p className="text-red-500 text-sm">{errors.identityNumber}</p>
             )}
           </div>
           <div className="mb-4">
@@ -279,9 +228,60 @@ const AddPatientRecordForm = ({ onPatientAdded }) => {
               </p>
             )}
           </div>
+          <div className="mb-4">
+            <label htmlFor="gender" className="block text-gray-300">
+              Gender
+            </label>
+            <select
+              id="gender"
+              name="gender"
+              value={formValues.gender}
+              onChange={handleInputChange}
+              className="w-full p-2 border border-gray-300 rounded mt-1 text-gray-900"
+            >
+              <option value="">Select Gender</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
+            {errors.gender && (
+              <p className="text-red-500 text-sm">{errors.gender}</p>
+            )}
+          </div>
+          <div className="mb-4">
+            <label htmlFor="birthDate" className="block text-gray-300">
+              Birth Date
+            </label>
+            <input
+              type="date"
+              id="birthDate"
+              name="birthDate"
+              value={formValues.birthDate}
+              onChange={handleInputChange}
+              className="w-full p-2 border border-gray-300 rounded mt-1 text-gray-900"
+            />
+            {errors.birthDate && (
+              <p className="text-red-500 text-sm">{errors.birthDate}</p>
+            )}
+          </div>
+          <div className="mb-4">
+            <label htmlFor="phoneNumber" className="block text-gray-300">
+              Phone Number
+            </label>
+            <input
+              type="text"
+              id="phoneNumber"
+              name="phoneNumber"
+              value={formValues.phoneNumber}
+              onChange={handleInputChange}
+              className="w-full p-2 border border-gray-300 rounded mt-1 text-gray-900"
+            />
+            {errors.phoneNumber && (
+              <p className="text-red-500 text-sm">{errors.phoneNumber}</p>
+            )}
+          </div>
           <button
             type="submit"
-            className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-700"
+            className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-700 col-span-3"
             disabled={isLoading}
           >
             {isLoading ? "Adding..." : "Add Patient"}

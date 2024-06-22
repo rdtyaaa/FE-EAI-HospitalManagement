@@ -1,65 +1,70 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import createAxiosInstance from "../JWTconfig/axiosConfig";
 
 const AddMedicalRecordForm = () => {
   const [identityNumber, setIdentityNumber] = useState("");
   const [symptoms, setSymptoms] = useState("");
   const [medications, setMedications] = useState("");
-  const [patientOptions, setPatientOptions] = useState([]);
-  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState("");
+  const axiosInstance = createAxiosInstance("http://127.0.0.1:6060/v1/");
 
-  const axiosInstance = createAxiosInstance("http://127.0.0.1:5000/v1/");
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setSubmitting(true);
 
-  useEffect(() => {
-    if (identityNumber.trim() !== "") {
-      fetchPatients();
-    } else {
-      setPatientOptions([]);
-    }
-  }, [identityNumber]);
-
-  const fetchPatients = async () => {
     try {
-      const parsedNumber = parseInt(identityNumber);
-      const response = await axiosInstance.get(
-        `/medical/patient?identityNumber=${parsedNumber}`
-      );
-      if (response.status === 200) {
-        setPatientOptions(response.data.data);
+      // Validation
+      if (!identityNumber || identityNumber.length !== 16) {
+        throw new Error("Identity number must be 16 digits long.");
+      }
+      if (!symptoms || symptoms.length < 1 || symptoms.length > 2000) {
+        throw new Error("Symptoms must be between 1 and 2000 characters.");
+      }
+      if (!medications || medications.length < 1 || medications.length > 2000) {
+        throw new Error("Medications must be between 1 and 2000 characters.");
+      }
+
+      const response = await axiosInstance.post("/medical/record", {
+        identityNumber: parseInt(identityNumber, 10), // Ensure identityNumber is sent as integer
+        symptoms,
+        medications,
+      });
+
+      if (response.status === 201) {
+        setSubmitMessage("Medical record added successfully.");
+        setIdentityNumber("");
+        setSymptoms("");
+        setMedications("");
+        setTimeout(() => {
+          window.location.reload(); // Reload page after 1 second
+        }, 1000); // Adjust the timeout duration as needed
       } else {
-        console.error("Failed to fetch patients:", response.statusText);
-        setPatientOptions([]);
+        console.error("Failed to add medical record:", response.statusText);
+        setSubmitMessage("Failed to add medical record.");
       }
     } catch (error) {
-      console.error("Error fetching patients:", error.message);
-      setPatientOptions([]);
+      if (error.response && error.response.status === 400) {
+        console.error("Validation error:", error.response.data.message);
+        setSubmitMessage(error.response.data.message);
+      } else if (error.response && error.response.status === 404) {
+        console.error(
+          "Identity number not found:",
+          error.response.data.message
+        );
+        setSubmitMessage("Identity number not found.");
+      } else if (error.response && error.response.status === 401) {
+        console.error("Unauthorized:", error.response.data.message);
+        setSubmitMessage("Unauthorized.");
+      } else {
+        console.error("Error adding medical record:", error.message);
+        setSubmitMessage(
+          "Error adding medical records.  Check the identity number, make sure it's registered!"
+        );
+      }
+    } finally {
+      setSubmitting(false);
     }
-  };
-
-  const handleIdentityNumberChange = (event) => {
-    setIdentityNumber(event.target.value);
-    setSelectedPatient(null); // Reset selected patient when identity number changes
-  };
-
-  const handlePatientSelect = (patient) => {
-    setSelectedPatient(patient);
-    setIdentityNumber(patient.identityNumber);
-    setPatientOptions([]); // Clear dropdown options after selecting a patient
-  };
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    // Perform submission logic here
-    console.log("Form submitted:", {
-      identityNumber,
-      symptoms,
-      medications,
-    });
-    // Reset form fields
-    setIdentityNumber("");
-    setSymptoms("");
-    setMedications("");
-    setSelectedPatient(null);
   };
 
   return (
@@ -87,23 +92,10 @@ const AddMedicalRecordForm = () => {
                 name="identityNumber"
                 className="w-full p-2 border border-gray-300 rounded mt-1"
                 value={identityNumber}
-                onChange={handleIdentityNumberChange}
-                autoComplete="off" // Disable browser autocomplete
+                onChange={(e) => setIdentityNumber(e.target.value)}
+                autoComplete="off"
                 required
               />
-              {patientOptions.length > 0 && (
-                <div className="mt-1 bg-white rounded-lg shadow-lg">
-                  {patientOptions.map((patient) => (
-                    <div
-                      key={patient.id}
-                      className="cursor-pointer p-2 hover:bg-gray-100"
-                      onClick={() => handlePatientSelect(patient)}
-                    >
-                      {patient.name} - {patient.identityNumber}
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
             <div className="mb-4">
               <label htmlFor="symptoms" className="block text-gray-300">
@@ -136,10 +128,13 @@ const AddMedicalRecordForm = () => {
             <button
               type="submit"
               className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-700"
+              disabled={submitting}
             >
-              Add Medical Record
+              {submitting ? "Adding Medical Record..." : "Add Medical Record"}
             </button>
-            <p id="add-medical-record-message" className="mt-4" />
+            {submitMessage && (
+              <p className="mt-4 text-white">{submitMessage}</p>
+            )}
           </form>
         </section>
       </main>

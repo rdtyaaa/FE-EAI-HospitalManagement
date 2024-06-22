@@ -1,16 +1,65 @@
-import React from "react";
 import { Link, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { jwtDecode } from "jwt-decode"; // Import jwt-decode for decoding JWT
 
 const Sidebar = () => {
+  const [jwtToken, setJwtToken] = useState("");
+  const [tokenExpiration, setTokenExpiration] = useState({
+    minutes: 0,
+    seconds: 0,
+  });
   const navigate = useNavigate(); // Using useNavigate instead of useHistory
 
   const handleLogout = () => {
     // Clear the user's token from storage
     localStorage.removeItem("isLoggedIn"); // or sessionStorage.removeItem('accessToken');
+    localStorage.removeItem("accessToken");
 
     // Navigate to login page or home page
     navigate("/login"); // Redirect to login page after logout
   };
+
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken"); // Use sessionStorage if token is stored there
+
+    if (token) {
+      try {
+        const decodedToken = jwtDecode(token);
+        // console.log(decodedToken);
+        setJwtToken(token);
+
+        // Set initial expiration time
+        const currentTime = Date.now() / 1000; // Current time in seconds
+        const tokenExp = decodedToken.expires; // Token expiration time in seconds
+        const timeLeft = tokenExp - currentTime;
+
+        const calculateTimeLeft = () => {
+          const currentTime = Date.now() / 1000; // Update current time
+          const newTimeLeft = tokenExp - currentTime;
+
+          if (newTimeLeft > 0) {
+            const minutes = Math.floor(newTimeLeft / 60);
+            const seconds = Math.floor(newTimeLeft % 60);
+            setTokenExpiration({ minutes, seconds });
+          } else {
+            clearInterval(interval); // Clear interval if token has expired
+            handleLogout(); // Optional: logout user when token expires
+          }
+        };
+
+        // Initial calculation
+        calculateTimeLeft();
+
+        // Update the time left every second
+        const interval = setInterval(calculateTimeLeft, 1000);
+
+        return () => clearInterval(interval); // Clear interval on component unmount
+      } catch (error) {
+        console.error("Failed to decode JWT token:", error);
+      }
+    }
+  }, [navigate]);
+
   return (
     <>
       <button
@@ -61,27 +110,6 @@ const Sidebar = () => {
                   <span className="ms-3 text-sm">Home</span>
                 </Link>
               </li>
-              {/* <li>
-                <Link
-                  to="/search"
-                  className="flex w-full items-center p-2 text-white rounded-lg dark:text-white hover:bg-gray-900 dark:hover:bg-gray-700 group"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    className="size-6"
-                  >
-                    <path d="M8.25 10.875a2.625 2.625 0 1 1 5.25 0 2.625 2.625 0 0 1-5.25 0Z" />
-                    <path
-                      fillRule="evenodd"
-                      d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm-1.125 4.5a4.125 4.125 0 1 0 2.338 7.524l2.007 2.006a.75.75 0 1 0 1.06-1.06l-2.006-2.007a4.125 4.125 0 0 0-3.399-6.463Z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <span className="ms-2 text-sm">Search</span>
-                </Link>
-              </li> */}
             </ul>
             <ul className="py-4 mt-4 space-y-2 border-y border-gray-200 dark:border-gray-700">
               <li>
@@ -166,6 +194,14 @@ const Sidebar = () => {
             >
               Log Out
             </button>
+          </div>
+          <div className="text-white text-2xs flex-wrap">
+            <h2>JWT Information</h2>
+            <p>Token: {jwtToken}</p>
+            <p>
+              Time Left: {tokenExpiration.minutes} minutes and{" "}
+              {tokenExpiration.seconds} seconds
+            </p>
           </div>
         </div>
       </aside>

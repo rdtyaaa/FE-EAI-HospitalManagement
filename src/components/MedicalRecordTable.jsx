@@ -37,7 +37,7 @@ const MedicalRecordTable = () => {
       <main className="container mx-auto p-4">
         <section className="mb-8">
           <h2 className="text-xl font-semibold mb-2 text-gray-400">
-            Medical Record List
+            Medical Record History
           </h2>
           <div className="overflow-x-auto rounded-lg">
             <table className="min-w-full bg-white border border-gray-300 rounded-lg bg-gradient-to-tr from-gray-200 via-gray-100 to-slate-100">

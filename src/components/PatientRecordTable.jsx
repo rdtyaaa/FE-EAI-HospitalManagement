@@ -41,7 +41,7 @@ const PatientRecordTable = () => {
     <main className="container mx-auto p-4">
       <section className="mb-8">
         <h2 className="text-xl font-semibold mb-2 text-white">
-          Medical Patient List
+          Medical Patient History
         </h2>
         <div className="overflow-x-auto rounded-lg">
           <table className="min-w-full bg-white border border-gray-300 rounded-lg bg-gradient-to-tr from-gray-200 via-gray-100 via-15% to-slate-100">
