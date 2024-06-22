@@ -69,7 +69,7 @@ function Login() {
       <div className="w-full max-w-sm p-6 bg-white shadow-md bg-gradient-to-l from-gray-600 to-gray-500 text-white">
         <h1 className="text-2xl font-bold mb-4">Login</h1>
         <form onSubmit={handleLogin}>
-          <div className="mb-4">
+          <div className="mb-2">
             <label htmlFor="nip" className="block mb-2">
               NIP
             </label>
@@ -83,7 +83,7 @@ function Login() {
             />
             {nipError && <p className="text-red-500 text-sm">{nipError}</p>}
           </div>
-          <div className="mb-4">
+          <div className="mb-2">
             <label htmlFor="password" className="block mb-2">
               Password
             </label>
@@ -101,7 +101,7 @@ function Login() {
           </div>
           <button
             type="submit"
-            className={`w-full bg-blue-500 text-white p-2 rounded ${
+            className={`w-full bg-blue-500 text-white mt-4 p-2 rounded ${
               loading ? "opacity-50 cursor-not-allowed" : ""
             }`}
             disabled={loading}
@@ -109,9 +109,9 @@ function Login() {
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
-        <p className="mt-4 text-sm text-gray-400">
+        <p className="mt-2 text-sm text-gray-400">
           Don't have an account?{" "}
-          <Link to="/register" className="text-white">
+          <Link to="/register" className="text-white hover:underline">
             Register here
           </Link>
         </p>
